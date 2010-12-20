@@ -1,0 +1,14 @@
+The "As If" Principle
+=====================
+
+	It has been found that describing various aspects of the
+	intended behavior in terms of concrete models best serves
+	discussion and presentation. Every attempt has been made to
+	craft the models so that implementors are constrained only
+	insofar as they must bring about the same result, as if they had
+	implemented the presentation model; often enough the clearest
+	model would make for the worst implementation.
+	
+	[Paraphrased from the "Rationale for American National Standard
+	for Information Systems - Programming Language - C"]
+

@@ -1,0 +1,132 @@
+							20060922.2044
+
+Git Configuration Hierarchy
+===========================
+Copyright (C) 2006 by Raymond S Brand
+
+Note: This applies to more than Git, but it was written with Git in
+mind.
+
+The settings for the runtime configuration of a tool may be found in
+several locations and each of those locations may be part of a different
+administrative domain. The tool user desires that the tool behaves in a
+predictable and consistent fashion which implies that the relative
+priority and/or search order of configuration sources should be well
+specified.
+
+
+Configuration Sources
+---------------------
+The following is a list of generic locations where a tool may find
+runtime configuration. Not all tools will search in all the listed
+locations and tools may search in locations not listed. The list is
+ordered from the least amount of information available about a specific
+tool use to the most amount of information available about a specific
+tool use.
+
+A tool may search for runtime configuration in any order.  However, a
+tool user expects that each of the individual runtime configuration
+settings used by the tool to be from the configuration source that
+specifies the individual runtime configuration setting with the most
+amount of information available about the specific tool use.
+
+Tools may also alter the configuration search strategy or locations due
+to command line options, environment variables, or other configuration
+locations.
+
+
+Default Settings in the Source Code:
+	Behavior of the tool in the absence of other configuration
+	information. Behavior should default to something safe and
+	likely to work.
+
+	Unix Example:
+		Not using a pager process for command output.
+
+	Git Example:
+		Committer identification is taken from the GCOS field of
+		the system passwd file and the hostname.
+
+Build Time Settings:
+	Default tool behaviors that are dependent on how the tool was
+	built.
+
+	Unix Example:
+		System directory path separator.
+
+	Git Example:
+		NO_SYMLINK_HEAD.
+
+Installation Time Settings:
+	Default tool behaviors that are dependent on where the tool is
+	installed.
+
+	Unix Example:
+		Paths to supporting utilities.
+
+	Git Example:
+		None.
+
+System General Settings:
+	Configuration defaults for all users on the system.
+
+	Unix Example:
+		Setting $PATH in /etc/profile.
+
+	Git Example:
+		Default hook scripts in the Git (system) templates
+		directory.
+
+User General Settings:
+	Configuration information for a particular user to apply to all
+	uses of the tool by that user.
+
+	Unix Example:
+		Many of the "dot" files in a user's home directory.
+
+	Git Example:
+		$HOME/.gitconfig.
+
+Project General Settings:
+	Configurable behavior that all project participants should
+	conform to.
+
+	Unix Example:
+		The, sometimes complex, machinery implemented in
+		Makefiles of some projects.
+
+	Git Example:
+		Scripts in $GIT_DIR"/hooks/ can be used for this but
+		there is no native support for maintaining consistency
+		across all participants.	
+
+User Project Settings:
+	Configuration information for a particular user that is specific
+	to a particular project.
+
+	Unix Example:
+
+	Git Example:
+		$GIT_DIR/config
+
+Environment Variables:
+	Configuration information that only applies to commands executed
+	by a particular process or process' inheriting the environment
+	of that process.
+
+	Unix Example:
+		$PAGER
+
+	Git Example:
+		$GIT_COMMITTER_NAME
+
+Command Line Options:
+	Configuration information that only applies to a particular
+	command invocation.
+
+	Unix Example:
+		The "-e" option to sh or bash.
+
+	Git Example:
+		The "--author" option to git-commit.
+

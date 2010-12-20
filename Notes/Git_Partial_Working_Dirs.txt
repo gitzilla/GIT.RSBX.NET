@@ -1,0 +1,65 @@
+							20060922.2044
+
+Notes on supporting Git operations in/on partial Working Directories
+====================================================================
+Copyright (C) 2006 by Raymond S Brand
+
+Motivation
+----------
+Be able to checkout only part of a tree, do some work, and commit the
+changes. Support for partial working directories is also (almost) a
+requirement for supporting partial repositories.
+
+
+Expectations
+------------
+All Git commands that currently work with the index or the working
+directory will work with indexes or working directories that are partial
+checkouts.
+
+Leading directories common to all objects of a partial checkout are not
+present in the working directory.
+
+The contents of a partial working directory can be determined on an path
+by path basis; entire directories are not required.
+
+
+Implementation Sketch
+---------------------
+The minimum required changes[*1*][*2*][*3*] to the index file to support
+partial checkouts are:
+
+1) the addition of WD_Prefix string to hold the common path prefix of
+all objects in the working directory. For a full checkout, the WD_Prefix
+string would be empty.
+
+2) A (new) flag for each entry in the index indicating whether or not
+the object is in the partial checkout.
+
+The contents of the index file still reflect the full tree but flag each
+object (file or symlink) separately as part of the checkout or not. The
+WD_Prefix string is so that a partial checkout consisting of only
+objects somewhere in the a/b/c/d/ tree can be found in the working
+directory without the a/b/c/d/ prefix to the path of the object.
+
+All the Git commands that use the index file will need to be changed to
+support this but the transfer protocols do not need to change.
+
+
+Notes
+-----
+[*1*] As long as the index file structure is being changed, it may be
+worth while also including the ideas in:
+	http://www.gelato.unsw.edu.au/archives/git/0601/15471.html
+	http://www.gelato.unsw.edu.au/archives/git/0601/15483.html
+	http://www.gelato.unsw.edu.au/archives/git/0601/15484.html
+Except for the "bind" parts since I still think that is a bad idea.
+
+[*2*] The index "TREE" (cache-tree) extension should also become a
+required part of the index.
+
+[*3*] Possibly split the index up by directory and store the parts in
+the working directory. An index "distributed" in this way would have
+a "natural" cache-tree built in and (finally) be able support empty
+directories.
+

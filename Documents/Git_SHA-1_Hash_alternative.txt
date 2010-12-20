@@ -1,0 +1,107 @@
+							20060922.2044
+
+Git Alternative Hash Structure
+==============================
+Copyright (C) 2006 by Raymond S Brand
+
+BACKGROUND
+----------
+Git uses the SHA-1 hash algorithm for two different purposes:
+	1) to name unique objects
+	2) to verify the integrity of objects
+
+Purpose 1) depends on the collision resistance of the hash algorithm;
+approximately 2^-80 for a 50% probability for SHA-1. Purpose 2) relies
+on the difficulty of second-preimage attacks against the hash
+algorithm; believed to be approximately 2^160 work for SHA-1.
+
+To date, the attacks against the MD5 and SHA-1 hash algorithms have
+depended on finding values for "data'", "fixup", and "fixup'" such that
+the following is true:
+
+	h = H( I(H) + header + data  + trailer + fixup  + rest )
+	h = H( I(H) + header + data' + trailer + fixup' + rest )
+
+Where: H() is the hash algorithm function; I(H) is the initial state
+for hash algorithm H; "header", "trailer", and "rest" are the same
+sequences in both hash invocations; "data'" is a different sequence
+than "data" but has the same length; "fixup'" is a different sequence
+than "fixup" but has the same length.
+
+When an attack is successful, the internal state of the hash algorithm
+will be the same for both invocations at the first hash algorithm block
+boundary after the "fixup" and "fixup'" sequences. Without loss of
+generality, the attacks are equivalent to finding values for "data'",
+"fixup", and "fixup'" such that the following is true:
+
+	H( I(H) + data + fixup )  =  H( I(H) + data' + fixup' )
+
+It is important to note that the attacker completely controls the
+"data'", "fixup", and "fixup'" sequences, other than the "data'" length
+requirement.
+
+Since the current attacks do not involve a predetermined output from
+the hash algorithm, the intent is to find a collision where the hashed
+sequences have some relationship that the attacker desires to exploit.
+
+Of the four Git object types, BLOBs, COMMITs, and TAGs contain
+arbitrary data at the end, making them ideal for the attack. TREE
+objects, in contrast, contain a significant amount of structure, making
+them unsuitable for the attacks.
+
+
+PROPOSAL
+--------
+Instead of structuring the input to the hash algorithm as:
+
+	h = H( I(H) + Git_header + object_content )
+
+structure it as:
+
+	h = H( I(H) + H( I(H) + header + content ) + header + content )
+
+thereby, forcing an attacker to solve:
+
+	h' = H( I(H) +      data  + fixup  )	// Inner
+	h' = H( I(H) +      data' + fixup' )	// Inner
+	h  = H( I(H) + h' + data  + fixup  )	// Outer
+	h  = H( I(H) + h' + data' + fixup' )	// Outer
+
+This construction makes the initial state of the outer hash dependent
+on all of the data. 
+
+Pros:
+	* Will work with all cryptographic hash algorithms.
+	* Immune to all (current) cryptographic hash algorithm attacks.
+	* Single pass object verification.
+	* Less expensive hashes can be used.
+
+Cons:
+	* Requires two passes of content at object creation/naming.
+	* Inside hash needs to become part of the object header.
+	* Double the amount of work versus single hashing.
+	* Conversion of existing repositories.
+
+
+REJECTED
+--------
+The following was rejected:
+
+	h = H( I(H) + header + content + H( I(H) + header + content ) )
+
+because it is equivalent to:
+
+	h = H( I(H) + data + fixup + H( I(H) + data + fixup ) )
+
+and the (current) attacks are designed to find:
+
+	h = H( I(H) + data  + fixup  )
+	h = H( I(H) + data' + fixup' )
+
+which is equivalent to:
+
+	h' = H( I(H) + data  + fixup  )
+	h' = H( I(H) + data' + fixup' )
+	h  = H( I(H) + data  + fixup  + h' )
+	h  = H( I(H) + data' + fixup' + h' )
+

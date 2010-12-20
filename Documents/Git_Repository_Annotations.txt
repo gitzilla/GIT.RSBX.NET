@@ -1,0 +1,88 @@
+							20060922.2044
+
+GIT Repository Annotation Convention
+====================================
+Copyright (C) 2006 by Raymond S Brand
+
+GIT repositories can benefit from descriptions of /intent/ for portions
+of the repository. This document formalizes a method to store those
+descriptions in the repository.
+
+Annotations
+------------
+Annotations are text files. Each text starts with a one line summary,
+optionally followed by a blank line and a longer, more detailed
+description.
+
+Annotations describe the /intended/ use or contents of the repository
+portion described. For instance, a branch is defined by a head ref; the
+annotation for that branch would describe what that branch is intended
+to hold, how to interpret and/or use the stored state, etc.
+
+Naming and Directory Structure
+------------------------------
+Annotations are named by appending ".txt" to the basename of the
+repository component it describes, and by appending ".dir" to each
+directory path component leading to the repository component from
+$GIT_DIR, and by prepending "annotations/" to the annotation pathname.
+
+The use of the ".txt" and ".dir" suffixes is to allow for descriptions
+of hierarchical structures (directories) and well as specific components
+(files).
+
+Missing annotations are ignored.
+
+The file "$GIT_DIR/description", used by gitweb and other tools, becomes
+a symbolic link to "$GIT_DIR/annotations/description.txt".
+
+Example Layout
+--------------
+$GIT_DIR/
+	...
+	annotations/
+		...
+		annotations.txt
+		...
+		description.txt
+		...
+		refs.dir/
+			...
+			heads.dir/
+				<head dir 1>.dir/
+					<head name 1.1>.txt
+					...
+					<head name 1.M>.txt
+				<head dir 1>.txt
+				...
+				<head dir N>.dir/
+					<head name N.1>.txt
+					...
+					<head name N.P>.txt
+				<head name 1>.txt
+				...
+				<head name Q>.txt
+			...
+			tags.dir/
+				<tag name 1>.txt
+				...
+				<tag name T>.txt
+			...
+	...
+	description -> annotations/description.txt
+	...
+
+Transformations
+---------------
+The following sed(1) command will transform a path in a single system
+call without tripping up on ".", ".." and "//":
+
+	sed 	-e 's;\([^/.][^/]*\|\.\.\.\)/;\1.dir/;'g \
+		-e 's;\([^/.][^/]*\|\.\.\.\)$;\1.txt;'
+
+Explaination of the RE's:
+
+	Match (path) components that:
+		have at least one non-dot,
+		OR
+		have at least 3 dots.
+
